@@ -1,0 +1,20 @@
+{
+  "name": "cookie-racho",
+  "description": "Cookie racho around the web",
+  "author": "Anthony Guimard",
+  "repository" : { 
+    "type" : "git",
+    "url" : "https://github.com/Tonours/cookie-racho.git"
+  },
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "slug": "latest",
+    "express": "latest",
+    "x-ray": "^1.0.5"
+  }
+}
