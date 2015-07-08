@@ -1,6 +1,6 @@
 # Cookie Racho
 
-## Who is cookie Racho
+## What is cookie Racho
 
 Cookie racho is not a super villain cookie thief.
 
