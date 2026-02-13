@@ -1,8 +1,8 @@
 # Cookie Racho
 
-CLI (Bun + TypeScript) to scrape recipe pages (mostly francophone cooking sites) and normalize them into a strict JSON schema.
+Bun + TypeScript CLI to search, scrape, and normalize francophone recipe pages into a strict JSON schema.
 
-It extracts `schema.org/Recipe` from JSON-LD first, then falls back to microdata when possible, and validates the final output with Zod.
+Extraction prefers `schema.org/Recipe` from JSON-LD, then falls back to microdata when available, and validates the final output with Zod.
 
 ## Requirements
 
@@ -14,30 +14,52 @@ It extracts `schema.org/Recipe` from JSON-LD first, then falls back to microdata
 bun install
 ```
 
+## Build / Install CLI
+
+Build a standalone executable:
+
+```sh
+bun run build:compile
+./dist/cookie-racho --help
+```
+
+Install it in your PATH (creates a symlink, defaulting to `~/.local/bin`):
+
+```sh
+bun run cli:install
+cookie-racho --help
+```
+
 ## Usage
+
+If you have not installed the CLI yet, you can also run commands in development mode:
+
+```sh
+bun run dev -- --help
+```
 
 Extract + normalize a recipe from a URL:
 
 ```sh
-bun run dev -- extract "https://example.com/recette"
+cookie-racho extract "https://example.com/recette"
 ```
 
 Multiple URLs (JSON array output):
 
 ```sh
-bun run dev -- extract "https://example.com/a" "https://example.com/b"
+cookie-racho extract "https://example.com/a" "https://example.com/b"
 ```
 
 JSONL output (one recipe per line):
 
 ```sh
-bun run dev -- extract --format jsonl "https://example.com/a" "https://example.com/b"
+cookie-racho extract --format jsonl "https://example.com/a" "https://example.com/b"
 ```
 
 Useful scraping knobs:
 
 ```sh
-bun run dev -- extract \
+cookie-racho extract \
   --cache-ttl 7d \
   --rate 1500ms \
   --timeout 30s \
@@ -48,19 +70,19 @@ bun run dev -- extract \
 Search recipe URLs (best-effort):
 
 ```sh
-bun run dev -- search "pates tomates"
+cookie-racho search "pates tomates"
 ```
 
 Limit search to specific sites:
 
 ```sh
-bun run dev -- search --sites marmiton,750g "pates tomates"
+cookie-racho search --sites marmiton,750g "pates tomates"
 ```
 
 Search output as JSONL:
 
 ```sh
-bun run dev -- search --format jsonl "pates tomates"
+cookie-racho search --format jsonl "pates tomates"
 ```
 
 Supported site ids (for `--sites`):
@@ -76,11 +98,25 @@ Supported site ids (for `--sites`):
 
 - Polite defaults: per-host rate limiting + on-disk cache (SQLite).
 - If a site does not expose `schema.org/Recipe` (JSON-LD or microdata), extraction will fail.
-- Search relies on structured data (JSON-LD `ItemList`) on the search pages, and may return empty results depending on the site.
+- Search prefers structured data (JSON-LD `ItemList`) when the site exposes it, and falls back to DuckDuckGo HTML results for some sites.
+- Some sites render search results client-side, so on-site search pages may contain no results in the initial HTML.
 
 ## Development
 
+Run unit tests:
+
 ```sh
 bun test
-bun test --coverage
+```
+
+Coverage:
+
+```sh
+bun test --coverage --coverage-reporter=text
+```
+
+Run the integration test (hits real URLs):
+
+```sh
+COOKIE_RACHO_INTEGRATION=1 bun test src/integration/marmiton.integration.test.ts
 ```
