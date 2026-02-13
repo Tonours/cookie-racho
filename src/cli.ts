@@ -2,7 +2,7 @@ import path from "node:path";
 import process from "node:process";
 
 import { SqlitePageCache } from "./core/cache";
-import { DomainRateLimiter } from "./core/fetcher";
+import { DomainRateLimiter, type FetchLike } from "./core/fetcher";
 import { scrapeRecipeFromUrl } from "./extract/recipe";
 import { searchRecipes } from "./search/search";
 import { defaultSiteIds, getSiteById, type SiteId } from "./sites/registry";
@@ -15,7 +15,7 @@ export type CliDeps = {
   now?: () => number;
   sleep?: (ms: number) => Promise<void>;
   random?: () => number;
-  fetchImpl?: typeof fetch;
+  fetchImpl?: FetchLike;
 };
 
 type OutputFormat = "json" | "jsonl";

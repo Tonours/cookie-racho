@@ -25,6 +25,22 @@ export class SqlitePageCache implements PageCache {
     }
 
     this.db = new Database(dbPath);
+
+    // This cache can be used by multiple processes (e.g. concurrent CLI runs).
+    // Help avoid transient "database is locked" errors.
+    try {
+      this.db.run("PRAGMA busy_timeout = 5000;");
+    } catch {
+      // Ignore; not critical for cache correctness.
+    }
+
+    if (dbPath !== ":memory:") {
+      try {
+        this.db.run("PRAGMA journal_mode = WAL;");
+      } catch {
+        // Ignore; not critical for cache correctness.
+      }
+    }
     this.db.run(`
       CREATE TABLE IF NOT EXISTS page_cache (
         url TEXT PRIMARY KEY,

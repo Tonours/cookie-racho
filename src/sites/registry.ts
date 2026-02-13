@@ -38,7 +38,7 @@ const SITES: Site[] = [
     source_attribution: "750g",
     host_suffixes: ["750g.com"],
     search: {
-      buildSearchUrl: (query) => `https://www.750g.com/recherche.htm?search=${encodeURIComponent(query)}`
+      buildSearchUrl: (query) => `https://www.750g.com/recherche/?q=${encodeURIComponent(query)}`
     }
   },
   {
@@ -48,7 +48,8 @@ const SITES: Site[] = [
     source_attribution: "CuisineAZ",
     host_suffixes: ["cuisineaz.com"],
     search: {
-      buildSearchUrl: (query) => `https://www.cuisineaz.com/recettes/recherche_v2.aspx?q=${encodeURIComponent(query)}`
+      buildSearchUrl: (query) =>
+        `https://www.cuisineaz.com/recettes/recherche_terme.aspx?recherche=${encodeURIComponent(query)}`
     }
   },
   {
@@ -58,7 +59,8 @@ const SITES: Site[] = [
     source_attribution: "Ptitchef",
     host_suffixes: ["ptitchef.com"],
     search: {
-      buildSearchUrl: (query) => `https://www.ptitchef.com/recettes/recherche.asp?type=all&recherche=${encodeURIComponent(query)}`
+      buildSearchUrl: (query) =>
+        `https://duckduckgo.com/html/?q=${encodeURIComponent(`site:ptitchef.com recette ${query}`)}`
     }
   },
   {
@@ -68,7 +70,8 @@ const SITES: Site[] = [
     source_attribution: "Cuisine Actuelle",
     host_suffixes: ["cuisineactuelle.fr"],
     search: {
-      buildSearchUrl: (query) => `https://www.cuisineactuelle.fr/recettes/recherche?q=${encodeURIComponent(query)}`
+      buildSearchUrl: (query) =>
+        `https://duckduckgo.com/html/?q=${encodeURIComponent(`site:cuisineactuelle.fr recette ${query}`)}`
     }
   },
   {
@@ -78,7 +81,10 @@ const SITES: Site[] = [
     source_attribution: "Journal des Femmes",
     host_suffixes: ["journaldesfemmes.fr"],
     search: {
-      buildSearchUrl: (query) => `https://cuisine.journaldesfemmes.fr/recettes/recherche.aspx?search=${encodeURIComponent(query)}`
+      buildSearchUrl: (query) =>
+        `https://duckduckgo.com/html/?q=${encodeURIComponent(
+          `site:cuisine.journaldesfemmes.fr recette ${query}`
+        )}`
     }
   }
 ];

@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
+import type { FetchLike } from "./core/fetcher";
+
 import { parseDurationToMs, runCli } from "./cli";
 
 function createBufferWriter() {
@@ -197,7 +199,7 @@ describe("runCli", () => {
     const out = createBufferWriter();
     const err = createBufferWriter();
 
-    const fetchImpl: typeof fetch = async (input) => {
+    const fetchImpl: FetchLike = async (input) => {
       const url = String(input);
       const html = url.includes("good") ? recipeHtml() : noRecipeHtml();
       return new Response(html, { status: 200, headers: { "content-type": "text/html" } });
@@ -301,7 +303,7 @@ describe("runCli", () => {
     const out = createBufferWriter();
     const err = createBufferWriter();
 
-    const fetchImpl: typeof fetch = async (input) => {
+    const fetchImpl: FetchLike = async (input) => {
       const url = new URL(String(input));
       expect(url.hostname).toContain("marmiton.org");
       expect(url.searchParams.get("aqt")).toBe("pates tomates");
@@ -483,7 +485,7 @@ describe("runCli", () => {
       }</script>
     </head></html>`;
 
-    const fetchImpl: typeof fetch = async (input) => {
+    const fetchImpl: FetchLike = async (input) => {
       const url = String(input);
       if (url.includes("marmiton.org")) return new Response("Forbidden", { status: 403 });
       if (url.includes("750g.com")) return new Response(htmlOk, { status: 200, headers: { "content-type": "text/html" } });

@@ -1,3 +1,5 @@
+import { decodeHtmlEntities } from "./htmlEntities";
+
 const LINK_TAG_RE = /<link\b[^>]*>/gi;
 const META_TAG_RE = /<meta\b[^>]*>/gi;
 const TITLE_RE = /<title\b[^>]*>([\s\S]*?)<\/title>/i;
@@ -8,7 +10,7 @@ export function extractCanonicalUrl(html: string): string | null {
     const rel = getAttr(tag, "rel");
     if (!rel || rel.toLowerCase() !== "canonical") continue;
     const href = getAttr(tag, "href");
-    if (href) return href;
+    if (href) return decodeHtmlEntities(href);
   }
 
   // Fallback: OpenGraph URL
@@ -17,7 +19,7 @@ export function extractCanonicalUrl(html: string): string | null {
     const prop = getAttr(tag, "property") ?? getAttr(tag, "name");
     if (!prop || prop.toLowerCase() !== "og:url") continue;
     const content = getAttr(tag, "content");
-    if (content) return content;
+    if (content) return decodeHtmlEntities(content);
   }
 
   return null;

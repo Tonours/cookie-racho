@@ -1,13 +1,19 @@
+import { decodeHtmlEntities } from "./htmlEntities";
+
 export type JsonObject = Record<string, unknown>;
 
-const JSONLD_SCRIPT_RE =
-  /<script\b[^>]*type\s*=\s*(?:"application\/ld\+json"|'application\/ld\+json')[^>]*>([\s\S]*?)<\/script>/gi;
+const SCRIPT_WITH_TYPE_RE =
+  /<script\b[^>]*\btype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))[^>]*>([\s\S]*?)<\/script>/gi;
 
 export function extractJsonLdObjects(html: string): unknown[] {
   const objects: unknown[] = [];
 
-  for (const match of html.matchAll(JSONLD_SCRIPT_RE)) {
-    const raw = match[1] ?? "";
+  for (const match of html.matchAll(SCRIPT_WITH_TYPE_RE)) {
+    const typeRaw = (match[1] ?? match[2] ?? match[3] ?? "").trim();
+    const type = normalizeScriptType(typeRaw);
+    if (type !== "application/ld+json") continue;
+
+    const raw = match[4] ?? "";
     const parsed = parseJsonLd(raw);
     if (parsed !== null) objects.push(parsed);
   }
@@ -29,6 +35,12 @@ function parseJsonLd(scriptContent: string): unknown | null {
   } catch {
     return null;
   }
+}
+
+function normalizeScriptType(typeValue: string): string {
+  const decoded = decodeHtmlEntities(typeValue).trim().toLowerCase();
+  const semi = decoded.indexOf(";");
+  return (semi >= 0 ? decoded.slice(0, semi) : decoded).trim();
 }
 
 function cleanupJsonLd(content: string): string {

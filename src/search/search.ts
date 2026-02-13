@@ -1,7 +1,8 @@
 import type { PageCache } from "../core/cache";
-import { DomainRateLimiter, fetchHtml } from "../core/fetcher";
+import { DomainRateLimiter, fetchHtml, type FetchLike } from "../core/fetcher";
 import { getUrlHost } from "../core/url";
 import { defaultSiteIds, getSiteById, type SiteId } from "../sites/registry";
+import { extractDuckDuckGoResultsFromHtml } from "./duckduckgo";
 import { extractItemListResultsFromHtml } from "./jsonldItemList";
 
 export type SearchResult = {
@@ -29,7 +30,7 @@ export type SearchOptions = {
   rateLimiter?: DomainRateLimiter;
   rateLimitMs?: number;
   now?: () => number;
-  fetchImpl?: typeof fetch;
+  fetchImpl?: FetchLike;
 };
 
 export async function searchRecipes(
@@ -75,10 +76,51 @@ export async function searchRecipes(
       });
 
       const allowed = site.host_suffixes;
-      const parsed = extractItemListResultsFromHtml(page.html, {
-        baseUrl: page.resolvedUrl,
-        allowedHostSuffixes: allowed
-      });
+
+      const searchHost = getUrlHost(searchUrl);
+      let parsed =
+        searchHost === "duckduckgo.com" || searchHost.endsWith(".duckduckgo.com")
+          ? extractDuckDuckGoResultsFromHtml(page.html, {
+              baseUrl: page.resolvedUrl,
+              allowedHostSuffixes: allowed
+            })
+          : extractItemListResultsFromHtml(page.html, {
+              baseUrl: page.resolvedUrl,
+              allowedHostSuffixes: allowed
+            });
+
+      // Some sites render search results client-side and ship little to no links/JSON-LD in the initial HTML.
+      // For these, fall back to DuckDuckGo which is static and easy to parse.
+      const shouldFallbackToDuckDuckGo =
+        parsed.length === 0 &&
+        searchHost !== "duckduckgo.com" &&
+        !searchHost.endsWith(".duckduckgo.com") &&
+        (site.id === "750g" || site.id === "cuisineaz");
+
+      if (shouldFallbackToDuckDuckGo) {
+        const domain = allowed[0] ?? "";
+        const ddgUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(`site:${domain} recette ${q}`)}`;
+        try {
+          const ddgPage = await fetchHtml(ddgUrl, {
+            timeoutMs: options.timeoutMs,
+            userAgent: options.userAgent,
+            acceptLanguage: options.acceptLanguage,
+            cache,
+            cacheTtlMs: options.cacheTtlMs,
+            rateLimiter,
+            now: options.now,
+            fetchImpl: options.fetchImpl
+          });
+
+          parsed = extractDuckDuckGoResultsFromHtml(ddgPage.html, {
+            baseUrl: ddgPage.resolvedUrl,
+            allowedHostSuffixes: allowed
+          });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          throw new Error(`DuckDuckGo fallback failed: ${message}`);
+        }
+      }
 
       let addedForSite = 0;
       for (const item of parsed) {

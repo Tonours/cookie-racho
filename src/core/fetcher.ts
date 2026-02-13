@@ -10,6 +10,11 @@ export type FetchHtmlResult = {
   fromCache: boolean;
 };
 
+export type FetchLike = (
+  input: Parameters<typeof fetch>[0],
+  init?: Parameters<typeof fetch>[1]
+) => ReturnType<typeof fetch>;
+
 export type FetchHtmlOptions = {
   timeoutMs?: number;
   userAgent?: string;
@@ -20,7 +25,7 @@ export type FetchHtmlOptions = {
   now?: () => number;
   sleep?: (ms: number) => Promise<void>;
   random?: () => number;
-  fetchImpl?: typeof fetch;
+  fetchImpl?: FetchLike;
 };
 
 export class DomainRateLimiter {
@@ -110,7 +115,9 @@ export async function fetchHtml(urlSpec: string, opts: FetchHtmlOptions = {}): P
     const rawResolved = response.url || url;
     const resolvedUrl = safeNormalizeUrl(rawResolved) ?? url;
     const headersObj: Record<string, string> = {};
-    for (const [k, v] of response.headers.entries()) headersObj[k] = v;
+    response.headers.forEach((v, k) => {
+      headersObj[k] = v;
+    });
 
     if (cache) {
       await cache.set({

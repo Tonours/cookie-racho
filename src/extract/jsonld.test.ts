@@ -20,6 +20,19 @@ describe("extractJsonLdObjects", () => {
     expect((jsonlds[0] as any)["@type"]).toBe("Recipe");
   });
 
+  test("supports HTML-entity encoded type attribute", () => {
+    const html = `<!doctype html>
+      <html>
+        <head>
+          <script type="application&#x2F;ld&#x2B;json">{"@type":"Recipe","name":"EntityType"}</script>
+        </head>
+      </html>`;
+
+    const jsonlds = extractJsonLdObjects(html);
+    expect(jsonlds).toHaveLength(1);
+    expect((jsonlds[0] as any).name).toBe("EntityType");
+  });
+
   test("ignores invalid JSON", () => {
     const html = `<!doctype html>
       <html>

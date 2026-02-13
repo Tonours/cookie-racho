@@ -1,6 +1,5 @@
 import type { PageCache } from "../core/cache";
-import type { DomainRateLimiter } from "../core/fetcher";
-import { fetchHtml } from "../core/fetcher";
+import { fetchHtml, type DomainRateLimiter, type FetchLike } from "../core/fetcher";
 import type { ScrapedRecipe } from "../schema/scrapedRecipe";
 import { normalizeRecipeFromJsonLd } from "../normalize/recipe";
 
@@ -15,7 +14,7 @@ export type ScrapeOptions = {
   cacheTtlMs?: number;
   rateLimiter?: DomainRateLimiter;
   now?: () => number;
-  fetchImpl?: typeof fetch;
+  fetchImpl?: FetchLike;
 };
 
 export async function scrapeRecipeFromUrl(url: string, options: ScrapeOptions = {}): Promise<ScrapedRecipe> {
