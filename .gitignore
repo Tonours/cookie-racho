@@ -13,6 +13,19 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 
+# TypeScript build info
+*.tsbuildinfo
+
+# Build output
+dist
+
+# Local runtime cache
+.cookie-racho
+
+# Local environment files
+.env
+.env.*
+
 # node-waf configuration
 .lock-wscript
 
